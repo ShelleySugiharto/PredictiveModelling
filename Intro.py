@@ -96,7 +96,28 @@ print("Mean Absolute Error (MAE) with validation dataset:", mae_val)
 The model is not very accurate.
 We can try to improve it by using a more complex model or by tuning the hyperparameters.
 Underfitting and overfitting:
+Overfitting is when we model the training data too well, capturing noise along with the underlying pattern. 
+This can lead to poor performance on new, unseen data.
 
-
-We will move on to a more complex model: Random Forest.
+Underfitting is when we model the training data too simply, failing to capture the underlying pattern. 
+This can also lead to poor performance on both the training and validation datasets.
 '''
+
+def get_mae(max_leaf_nodes, val_x, val_y, train_x, train_y):
+    model = DecisionTreeRegressor(max_leaf_nodes=max_leaf_nodes, random_state=0)
+    model.fit(train_x, train_y)
+    preds = model.predict(val_x)
+    mae = mean_absolute_error(val_y, preds)
+    return mae
+
+#Then, compare the MAE for different values of max_leaf_nodes for accuracy testing
+import numpy as np
+mae_full = []
+for max_leaf_nodes in [5, 50, 500, 5000]:
+    mae = get_mae(max_leaf_nodes, X_valid, y_valid, X_train, y_train)
+    mae_full.append(mae)
+    best_mae = min(mae_full)
+    print("Max leaf nodes:", max_leaf_nodes, "MAE:", mae)
+
+best_mae = min(mae_full)
+best_tree_size = np.where(mae_full == best_mae)[0][0] #doesn't work, working on it
