@@ -65,6 +65,7 @@ Starting with Mean Absolute Error (MAE)...
 error = actual - predicted
 MAE is the avg distance between the actual and predicted values.
 '''
+
 from sklearn.metrics import mean_absolute_error
 mae = mean_absolute_error(exact_prices, predictions) #using js head
 print("Mean Absolute Error (MAE):", mae) #would be 0 in this case because the data is static and exact
@@ -112,12 +113,26 @@ def get_mae(max_leaf_nodes, val_x, val_y, train_x, train_y):
 
 #Then, compare the MAE for different values of max_leaf_nodes for accuracy testing
 import numpy as np
+test_max_leaf_nodes = [5, 50, 500, 5000]
 mae_full = []
-for max_leaf_nodes in [5, 50, 500, 5000]:
+for max_leaf_nodes in test_max_leaf_nodes:
     mae = get_mae(max_leaf_nodes, X_valid, y_valid, X_train, y_train)
     mae_full.append(mae)
-    best_mae = min(mae_full)
     print("Max leaf nodes:", max_leaf_nodes, "MAE:", mae)
 
-best_mae = min(mae_full)
-best_tree_size = np.where(mae_full == best_mae)[0][0] #doesn't work, working on it
+min_mae = min(mae_full)
+best_max_leaf_nodes = test_max_leaf_nodes[mae_full.index(min_mae)]
+print("Best max leaf nodes:", best_max_leaf_nodes) #optimal size for dtree
+
+'''
+Random Forest:
+Averages each component of multiple decision trees.
+Limits under and overfitting.
+'''
+from sklearn.ensemble import RandomForestRegressor
+forest_model = RandomForestRegressor(random_state=1)
+forest_model.fit(X_train, y_train)
+
+forest_val_predictions = forest_model.predict(X_valid)
+forest_mae_val = mean_absolute_error(y_valid, forest_val_predictions)
+print("Mean Absolute Error (MAE) with Random Forest:", forest_mae_val)
