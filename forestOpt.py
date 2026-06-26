@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from sklearn.model_selection import RandomizedSearchCV
+from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import validation_curve
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import r2_score
@@ -32,12 +33,13 @@ print("R^2 Score (Validation):", val_r2)
 #results: high train score, lower validation score --> high variance/overfitting
 '''
 
+
 #Optimization using randomized search
 if __name__ == "__main__":
     param_distributions = {
 
         #search for best max leaf nodes with max known at 550 from last optimized data
-        'max_leaf_nodes': np.arange(100, 575, 25).tolist(),
+        'max_leaf_nodes': np.arange(100, 800, 50).tolist(),
 
         #search for best min sample leaf
         'min_samples_leaf': [1, 2, 4, 6, 8, 10],
@@ -49,15 +51,51 @@ if __name__ == "__main__":
         'n_estimators': [100, 200, 300, 400, 500]
     }
 
-random_search = RandomizedSearchCV(
-    estimator=RandomForestRegressor(random_state=1, n_jobs=1), 
-    param_distributions=param_distributions, 
-    n_iter=100, cv=3, scoring='r2', random_state=1, n_jobs=1)
+    random_search = RandomizedSearchCV(
+        estimator=RandomForestRegressor(random_state=1, n_jobs=1), 
+        param_distributions=param_distributions, 
+        n_iter=30, cv=3, scoring='r2', random_state=1, n_jobs=1)
 
-random_search.fit(X_train, y_train)
+    random_search.fit(X_train, y_train)
 
-print("Best Score:", random_search.best_score_)
-print("Best Parameters:", random_search.best_params_)
+    print("Best Score:", random_search.best_score_)
+    print("Best Parameters:", random_search.best_params_)
+
+#Best Score: 0.7500885065086619
+#Winning Parameters: {'n_estimators': 200, 'min_samples_leaf': 2, 'max_leaf_nodes': 550, 'max_features': 1.0}
+
+#Micro Grid search
+    param_grid = {
+        'max_leaf_nodes': [543, 545, 550],
+        'min_samples_leaf': [2, 3, 4],
+        'max_features': [0.8, 0.9, 1.0],
+        'n_estimators': [190, 200, 210]
+    }
+
+    micro_grid_search = GridSearchCV(
+        estimator=random_search.best_estimator_,
+        param_grid=param_grid,
+        cv=3, scoring='r2', n_jobs=1
+    )
+
+    micro_grid_search.fit(X_train, y_train)
+
+    print("Best Score after micro grid search:", micro_grid_search.best_score_)
+    print("Best Parameters after micro grid search:", micro_grid_search.best_params_)
+
+#Best new score: 0.7508257090876502
+#Best new parameters: {'max_features': 1.0, 'max_leaf_nodes': 550, 'min_samples_leaf': 3, 'n_estimators': 200}
+
+#Sort feature importances
+    best_rf = micro_grid_search.best_estimator_
+    importances = best_rf.feature_importances_
+
+    feature_importances = pd.DataFrame({'Feature': X_train.columns, 'Importance': importances})
+    feature_importances = feature_importances.sort_values(by='Importance', ascending=False)
+
+    print(feature_importances)
+#Note: only 5 features used
+
 '''
 Optimization through one parameter: max_leaf_nodes
 
