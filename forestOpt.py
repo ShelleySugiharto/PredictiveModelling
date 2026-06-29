@@ -8,7 +8,7 @@ from sklearn.model_selection import validation_curve
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import r2_score
 
-from Intro import X_train, X_valid, y_train, y_valid , best_max_leaf_nodes
+from Intro import X_train, X_valid, y_train, y_valid
 
 '''
 Optimize the forest model to improve performance.
